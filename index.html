@@ -60,6 +60,7 @@ svg{width:100%;max-width:520px;display:block;margin:auto}
 .opt:hover{background:var(--p);color:#fff}
 .pop{position:fixed;left:50%;top:80px;transform:translateX(-50%);background:var(--y);color:#2a1b4d;font-weight:700;padding:8px 20px;border:3px solid var(--ln);border-radius:99px;z-index:9;animation:up 1.1s forwards}
 @keyframes up{to{top:40px;opacity:0}}
+.dp .st{padding:8px 12px;border-left:6px solid var(--p);margin:8px 0;border-radius:8px;transition:background .3s}.dp .st.hl{background:var(--y);color:#2a1b4d;border-color:var(--pk)}.dp p{margin:4px 0}#lvs{margin-bottom:8px}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -81,9 +82,9 @@ svg{width:100%;max-width:520px;display:block;margin:auto}
  <div class="card">
   <h2 id="ft"></h2>
   <div id="fx"></div>
-  <p><button class="btn" onclick="explain()">▶ Explique-moi</button><button class="btn pk" onclick="stop()">⏹ Stop</button><button class="btn yl" onclick="cloze()">🧩 Texte à trous</button></p>
+  <p><button class="btn" onclick="explain()">▶ Explique-moi en profondeur</button><button class="btn pk" onclick="stop()">⏹ Stop</button><button class="btn yl" onclick="cloze()">🧩 Texte à trous</button></p>
   <label><input type="checkbox" id="snd" checked style="width:auto;margin-right:6px">Voix du prof</label>
-  <div id="cz"></div>
+  <div id="dp"></div><div id="cz"></div>
  </div>
  <div>
   <div class="card" style="text-align:center"><div class="prof" id="prof">🧑‍🏫</div><div class="bubble" id="bub"></div></div>
@@ -100,7 +101,7 @@ svg{width:100%;max-width:520px;display:block;margin:auto}
 <section id="brain">
 <div class="row">
  <div class="card">
-  <h2>Remets chaque partie à sa place</h2>
+  <h2>Remets chaque partie à sa place</h2><div id="lvs"><button class="chip lvb on" data-l="1" onclick="setLv(1)">⭐ Niv.1 Noms</button><button class="chip lvb" data-l="2" onclick="setLv(2)">⭐⭐ Niv.2 Fonctions</button><button class="chip lvb" data-l="3" onclick="setLv(3)">🧪 Niv.3 Cas cliniques</button><button class="chip lvb" data-l="4" onclick="setLv(4)">🔥 Niv.4 Chrono</button></div>
   <svg viewBox="0 0 400 300" role="img" aria-label="Cerveau vu de côté, face à gauche">
    <defs><clipPath id="cp"><ellipse cx="200" cy="135" rx="165" ry="105"/></clipPath></defs>
    <rect class="z" data-z="tronc" x="215" y="205" width="30" height="80" rx="12" fill="#14c98e" fill-opacity=".45"/>
@@ -211,6 +212,57 @@ function choose(id,i){const o=sc.n[id].o[i];$('#ro').innerHTML='';log('Toi',o[0]
 function end(){const m=score>=sc.max?'🏆 Parfait !':score>=sc.max/2?'👍 Bien joué !':'💪 Rejoue pour progresser !';
  log('🎮 Résultat',m+' '+score+'/'+sc.max+' points','prof');addXp(score);
  $('#ro').innerHTML=`<button class="btn" onclick="startRP('${sc.k}')">↺ Rejouer</button>`}
+ 
+/* ===== v2 : niveaux, cours approfondi, scénarios variés ===== */
+const R=a=>a[Math.floor(Math.random()*a.length)],sh=a=>a.map(x=>[Math.random(),x]).sort((p,q)=>p[0]-q[0]).map(x=>x[1]);
+const P2=[['frontal','Lobe frontal','Raisonnement et décisions'],['parietal','Lobe pariétal','Toucher et orientation'],['occipital','Lobe occipital','Vision'],['temporal','Lobe temporal','Audition et mémoire'],['cervelet','Cervelet','Équilibre et mouvements'],['tronc','Tronc cérébral','Respiration et rythme cardiaque']];
+const nm=k=>P2.find(x=>x[0]==k)[1].replace('Lobe ','').replace(' cérébral','');
+const CASES=[["Après un choc, elle n'arrive plus à planifier ses études ni à prendre une décision.",'frontal'],["Il ne sent plus le contact d'un objet dans sa main gauche.",'parietal'],["Elle voit flou et perd la moitié de son champ visuel.",'occipital'],["Il n'arrive plus à retenir ce qu'on lui a dit hier ni à reconnaître une mélodie.",'temporal'],["Elle titube comme si elle avait trop bu, sans avoir bu.",'cervelet'],["Sa respiration et son rythme cardiaque sont menacés.",'tronc'],["Il agit sans réfléchir et ne contrôle plus ses impulsions.",'frontal'],["Elle ne sait plus s'orienter dans la pièce et se cogne aux objets.",'parietal'],["Ses gestes fins sont saccadés : il n'arrive plus à verser un verre.",'cervelet'],["Il comprend ce qu'on lui dit mais perd ses souvenirs récents.",'temporal']];
+let lv=1,Q=[],qi=0,qs=0,busy=0,tm,ord=sh(P2);
+function setLv(n){lv=n;document.querySelectorAll('.lvb').forEach(b=>b.classList.toggle('on',b.dataset.l==n));resetB()}
+function chips(){$('#chips').innerHTML=ord.filter(p=>!done[p[0]]).map(p=>`<span class="chip pc ${pick==p[0]?'sel':''}" draggable="true" data-p="${p[0]}" tabindex="0">${lv==2?p[2]:p[1]}</span>`).join('')||'<b>🏆 Cerveau complet !</b>'}
+function shake(el){el.classList.remove('shake');void el.getBoundingClientRect();el.classList.add('shake')}
+function place(z,p){if(lv>2||!p||done[p])return;const el=document.querySelector(`[data-z=${z}]`);
+ if(z==p){done[p]=1;pick=null;el.setAttribute('fill-opacity','.95');$('#t_'+z).textContent=nm(z);addXp(10*lv);const n=Object.keys(done).length;$('#bm').textContent=n==6?'🎉 Bravo, cerveau reconstitué !':'✅ Bien joué !';if(n==6)addXp(20)}
+ else{shake(el);$('#bm').textContent='❌ Pas ici ! Essaie une autre zone.'}chips()}
+function hint(){const p=P2.find(x=>x[0]==pick);$('#bm').textContent=lv>2?'💡 Cherche le mot-clé du symptôme : vision, toucher, équilibre, mémoire, décision…':p?'💡 '+(lv==2?p[1]:p[2])+'.':"Choisis d'abord une étiquette."}
+function resetB(){clearInterval(tm);done={};pick=null;busy=0;ord=sh(P2);const n={frontal:1,parietal:2,occipital:3,temporal:4,cervelet:5,tronc:6};
+ document.querySelectorAll('.z').forEach(e=>e.setAttribute('fill-opacity',e.dataset.z=='cervelet'?'.5':'.45'));for(const k in n)$('#t_'+k).textContent=lv==3?nm(k):n[k];
+ if(lv>2){Q=sh(CASES).slice(0,lv==4?8:5);qi=qs=0;ask()}else{$('#bm').textContent=lv==1?'Niveau 1 : place chaque nom sur la bonne zone.':'Niveau 2 : place chaque fonction sur la bonne zone.';chips()}}
+function ask(){busy=0;clearInterval(tm);if(qi>=Q.length){$('#bm').textContent='🏁 Score : '+qs+'/'+Q.length+(qs==Q.length?' 🏆':'');addXp(qs*15);$('#chips').innerHTML='<button class="btn" onclick="resetB()">↺ Rejouer (nouveaux cas)</button>';return}
+ const c=Q[qi];let t=10;$('#chips').innerHTML=`<b>Cas ${qi+1}/${Q.length}</b><p>${esc(c[0])}</p><b id="tk"></b>`;$('#bm').textContent=lv==3?'Touche la zone responsable.':'Touche la zone responsable (zones sans noms, 10 s !).';
+ if(lv==4){const f=()=>{$('#tk').textContent='⏱ '+t+'s';if(t--<=0)fb(0,c)};f();tm=setInterval(f,1000)}}
+function fb(ok,c){busy=1;clearInterval(tm);qs+=ok;$('#bm').textContent=(ok?'✅ Exact ! ':"❌ C'était : ")+P2.find(x=>x[0]==c[1])[1];qi++;setTimeout(ask,1300)}
+document.addEventListener('click',e=>{const z=e.target.closest('[data-z]');if(lv<3||!z||busy||!Q[qi])return;const c=Q[qi],ok=z.dataset.z==c[1]?1:0;if(!ok)shake(z);fb(ok,c)});
+ 
+/* cours approfondi */
+base[0].d=[['Vue d\'ensemble','Imagine le cerveau comme une entreprise : chaque service a une mission précise, mais tous communiquent en permanence. Quand l\'un tombe en panne, on voit tout de suite quelle fonction disparaît.'],['Lobe frontal : le directeur','Situé juste derrière le front, il planifie, compare les options et freine les impulsions. C\'est lui qui t\'aide à choisir de réviser plutôt que de scroller.'],['Pariétal et occipital : les capteurs','Le pariétal, au sommet, assemble le toucher et ta position dans l\'espace, comme quand tu retrouves ton téléphone dans le noir. L\'occipital, tout à l\'arrière, décode ce que voient tes yeux : on voit donc avec l\'arrière de la tête.'],['Lobe temporal : la bibliothèque sonore','Au niveau des tempes, il traite les sons et la parole, et sert de porte d\'entrée à la mémoire. Astuce : Temporal comme Tempes et Temps qui passe.'],['Cervelet et tronc : les coulisses','Le cervelet, petit et plissé, affine tes gestes et ton équilibre, par exemple quand tu fais du vélo. Le tronc cérébral gère l\'automatique vital : respirer et faire battre le cœur sans que tu y penses.'],['Mnémo à retenir','De l\'avant vers l\'arrière : Frontal décide, Pariétal ressent, Occipital voit. Sur le côté, Temporal écoute ; en bas, Cervelet équilibre et Tronc maintient en vie.']];
+base[1].d=[['Pourquoi relire ne suffit pas','Relire donne l\'illusion de savoir : le texte te paraît familier, donc tu crois le maîtriser. Se tester force le cerveau à retrouver l\'information, et cet effort la grave dans la mémoire.'],['Simuler, c\'est répéter sans danger','Un pilote s\'entraîne sur simulateur avant de voler. Un jeu de rôle fait pareil : tu prends une décision, tu vois la conséquence, tu recommences, sans aucun risque réel.'],['L\'erreur devient une alliée','Se tromper dans un cadre bienveillant laisse un souvenir marquant : tu retiens ce qui n\'a pas marché. L\'émotion du jeu renforce encore la mémoire.'],['Le rôle de l\'IA','Une IA peut générer des scénarios variés, ajuster la difficulté à ton niveau et t\'expliquer tes erreurs, comme un tuteur disponible à toute heure.'],['À retenir','Tester vaut mieux que relire, agir vaut mieux qu\'écouter, et essayer-échouer-recommencer permet d\'apprendre durablement.']];
+function local(f){return sents(f.x).map((s,i)=>['Idée '+(i+1),'En clair : '+s+' Demande-toi pourquoi c\'est important et trouve un exemple de ta vie quotidienne pour t\'en souvenir.'])}
+async function deep(){stop();const f=all()[cur],id=run;let st=f.d;$('#dp').innerHTML='<div class="card dp">⏳ Le prof prépare son cours…</div>';
+ if(!st){try{const sm=window.claude&&await claude.use('sample');if(sm){const r=await sm('Tu es un prof bienveillant. Explique EN PROFONDEUR cette fiche de cours à un étudiant, en français. Reformule avec tes mots (ne recopie pas), donne une analogie, un exemple concret et une astuce mnémotechnique. Réponds UNIQUEMENT en JSON : [{"titre":"...","texte":"... (2 à 4 phrases)"}] avec 5 à 6 étapes.\n\nFiche « '+f.t+' » :\n'+f.x,{cache:false});st=JSON.parse(r.text.replace(/```json|```/g,'').trim()).map(s=>[s.titre,s.texte])}}catch(e){}}
+ if(id!=run)return;if(!st)st=local(f);
+ $('#dp').innerHTML='<div class="card dp"><h2>🎓 Cours approfondi</h2>'+st.map((s,i)=>`<div class="st" id="d${i}"><b>${esc(s[0])}</b><p>${esc(s[1])}</p></div>`).join('')+'</div>';
+ const rid=++run;let i=0;$('#prof').classList.add('talk');
+ const step=()=>{if(rid!=run)return;document.querySelectorAll('.st').forEach(e=>e.classList.remove('hl'));if(i>=st.length){$('#prof').classList.remove('talk');$('#bub').textContent='Cours terminé ! Teste-toi avec le texte à trous 🧩';addXp(10);return}
+  const e=$('#d'+i);e.classList.add('hl');e.scrollIntoView({block:'nearest'});const s=st[i++];$('#bub').textContent=s[0];say(s[0]+'. '+s[1],step)};step()}
+function explain(){deep()}
+const _sh=show;show=function(){_sh();$('#dp').innerHTML=''};
+ 
+/* jeux de rôle : versions aléatoires */
+const URG=[['M. Durand','🧑‍🦱',[["Docteur, depuis ce matin les lettres sont floues et je vois mal sur la droite…","Tester sa vision : j'examine le lobe occipital","La vision est traitée dans le lobe occipital, à l'arrière.","Tester d'abord son équilibre","Piste logique, mais ses symptômes parlent de vision."],["Je me suis cogné l'arrière de la tête hier soir.","Prescrire un scanner cérébral immédiat","Un choc à l'arrière peut toucher la zone visuelle.","Le renvoyer chez lui","Un symptôme neurologique après un choc se contrôle toujours."],["Le scanner montre un petit hématome à l'arrière. Que lui dites-vous ?","On vous surveille : votre vue devrait revenir avec le traitement","Rassurant et précis : expliquer fait partie du soin.","Aucune idée, on verra bien","Bien communiquer fait partie du soin."]]],
+['Mme Lopez','👵',[["Docteur, je ne retiens plus rien de ce qu'on me dit et les sons me paraissent déformés.","Examiner le lobe temporal : audition et mémoire","Le lobe temporal gère les sons et la mémoire.","Prescrire des lunettes","Aucun rapport : ses symptômes ne concernent pas la vue."],["Je suis tombée sur la tempe droite la semaine dernière.","Demander une IRM cérébrale","L'IRM montre très bien les lésions des tissus mous.","Lui dire que c'est l'âge","Ne minimise jamais un trouble de mémoire après un choc."],["L'IRM révèle une petite contusion sur le côté. Votre conclusion ?","Un suivi avec rééducation de la mémoire, et du repos","Plan clair, adapté au lobe touché.","Rentrez et oubliez ça","La récupération demande un accompagnement."]]],
+['Léo','🧑‍🎤',[["J'ai du mal à marcher droit et mes gestes sont saccadés, mais je n'ai rien bu !","Examiner le cervelet : équilibre et coordination","Le cervelet affine l'équilibre et les mouvements.","Tester sa mémoire","Mauvaise piste : le souci est moteur, pas mémoriel."],["J'ai pris un coup derrière la nuque en faisant du skate.","Immobiliser la nuque et faire une imagerie","Prudence d'abord : la nuque et le cervelet sont proches.","Lui conseiller de reprendre le skate","Trop risqué avant un diagnostic."],["L'imagerie montre un léger œdème sous l'arrière du cerveau. Que dites-vous ?","Repos strict, surveillance et rééducation de l'équilibre","Réponse adaptée à la fonction touchée.","Tout va bien, vous pouvez courir","Un œdème peut s'aggraver sans repos."]]],
+['Nadia (sœur de la patiente)','👩',[["Depuis son accident, ma sœur prend des décisions impulsives et n'arrive plus à planifier.","Évaluer le lobe frontal : décision et contrôle","Le lobe frontal gère la planification et les impulsions.","Examiner son audition","Hors sujet : l'audition n'est pas en cause."],["Elle s'est cogné le front contre un volant.","Faire un scanner et un bilan neuropsychologique","Le bilan mesure précisément les fonctions touchées.","Attendre que ça passe","Attendre peut aggraver les séquelles."],["Le bilan confirme une atteinte frontale légère. Vos conseils ?","Rééducation cognitive et soutien de l'entourage","Les proches jouent un rôle clé dans la récupération.","Évitez de lui en parler","Le dialogue avec l'entourage est essentiel."]]]];
+const J1=[["Bonjour ! Parlez-moi de vous en une minute.","Je résume mon parcours et ce qui me motive pour ce poste","Structuré et ciblé : ce qu'attend un recruteur.","Je récite tout mon CV","Trop long ! Garde 2 ou 3 éléments clés."],["Pourquoi voulez-vous travailler chez nous ?","Je cite précisément ce qui m'attire dans vos projets","Preuve de recherche : très convaincant.","Parce que j'ai besoin d'un job","Trop vague : montre une vraie motivation."],["Qu'est-ce qui vous distingue des autres candidats ?","Je donne un exemple concret de réussite chiffrée","Un fait concret vaut mieux qu'un adjectif.","Je suis le meilleur, point","Une affirmation sans preuve convainc peu."]];
+const J2=[["Quelle est votre plus grande faiblesse ?","J'ai du mal à déléguer, mais je travaille dessus avec une méthode","Honnête, avec une action concrète.","Je n'en ai aucune","Peu crédible : montre de l'autocritique."],["Racontez un échec et ce que vous en avez appris.","Je décris un vrai échec, mon analyse et ce que j'ai changé","L'apprentissage compte plus que l'échec.","Je n'ai jamais échoué","Cela sonne faux et ferme la discussion."],["Comment gérez-vous un désaccord avec un collègue ?","J'écoute, je reformule, puis je propose un compromis","L'écoute active est une vraie compétence d'équipe.","J'impose mon avis, j'ai raison","L'ego bloque le travail d'équipe."]];
+const J3=[["Avez-vous des questions pour nous ?","Oui : comment se passe l'intégration des nouvelles recrues ?","Poser une question prouve ton intérêt.","Non, c'est bon","Dommage, c'est l'occasion de briller."],["Quelles sont vos prétentions salariales ?","Je donne une fourchette argumentée selon le marché","Argumenter rassure et ouvre la négociation.","Ce que vous voudrez","Tu te sous-évalues et perds en crédibilité."],["Où vous voyez-vous dans cinq ans ?","Je parle des compétences que je veux développer ici","Une ambition alignée avec le poste.","Pas ici, ailleurs","Franc mais maladroit."]];
+let lastU;
+function startRP(k){let who,av,st;
+ if(k=='urg'){let v;do v=R(URG);while(v==lastU);lastU=v;who=v[0];av=v[1];st=v[2]}else{who='Camille (RH)';av='🧑‍💼';st=[R(J1),R(J2),R(J3)]}
+ const ks=['s','b','c'],n={};st.forEach((p,i)=>{n[ks[i]]={t:p[0],o:sh([[p[1],ks[i+1]||'e',10,p[2]],[p[3],ks[i+1]||'e',0,p[4]]])}});
+ n.e={t:k=='urg'?'Merci docteur, je me sens en confiance. 🙏':'Merci, nous revenons vers vous très vite ! 🤝'};
+ sc={k,who,av,max:30,n};score=0;$('#rl').innerHTML='';$('#ro').innerHTML='';go('s')}
  
 hud();list();show();chips();
 </script>
