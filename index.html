@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>NeuroQuest – Révise en jouant</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#fff6e5;--card:#fff;--tx:#2a1b4d;--mut:#6d608a;--p:#7c3aed;--pk:#ff4d8d;--y:#ffc933;--g:#14c98e;--b:#3b82f6;--ln:#2a1b4d;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17112b;--card:#271c4b;--tx:#f6f1ff;--mut:#b9acdc;--ln:#0d0820}}
+:root[data-theme="dark"]{--bg:#17112b;--card:#271c4b;--tx:#f6f1ff;--mut:#b9acdc;--ln:#0d0820}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:'Fredoka',system-ui,sans-serif;font-size:17px;line-height:1.5}
+header{background:linear-gradient(120deg,var(--p),var(--pk));color:#fff;padding:14px 18px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
+h1{margin:0;font-size:28px;font-weight:700;letter-spacing:.3px}
+h2{margin:0 0 8px;font-size:22px}
+.hud{display:flex;align-items:center;gap:10px;background:rgba(0,0,0,.22);padding:6px 14px;border-radius:99px;font-weight:600}
+.xp{width:120px;height:12px;background:rgba(255,255,255,.3);border-radius:9px;overflow:hidden}
+#bar{height:100%;width:0;background:var(--y);transition:width .5s}
+nav{display:flex;gap:8px;padding:14px 18px 0;flex-wrap:wrap;max-width:1000px;margin:auto}
+nav button{font:inherit;font-weight:600;border:3px solid var(--ln);background:var(--card);color:var(--tx);padding:8px 16px;border-radius:14px;cursor:pointer;box-shadow:0 4px 0 var(--ln)}
+nav button.on{background:var(--y);color:#2a1b4d;transform:translateY(2px);box-shadow:0 2px 0 var(--ln)}
+main{max-width:1000px;margin:auto;padding:18px}
+section{display:none}section.on{display:block}
+.card{background:var(--card);border:3px solid var(--ln);border-radius:20px;padding:16px;box-shadow:0 5px 0 var(--ln);margin-bottom:16px}
+.row{display:flex;gap:16px;flex-wrap:wrap}.row>*{flex:1 1 300px;min-width:0}
+.chip{display:inline-block;font:inherit;font-weight:600;font-size:15px;border:3px solid var(--ln);background:var(--card);color:var(--tx);padding:5px 12px;border-radius:99px;margin:0 6px 8px 0;cursor:pointer}
+.chip.on{background:var(--b);color:#fff}
+.btn{font:inherit;font-weight:700;border:3px solid var(--ln);background:var(--g);color:#06291f;padding:8px 16px;border-radius:14px;cursor:pointer;box-shadow:0 4px 0 var(--ln);margin:4px 6px 4px 0}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ln)}
+.btn.pk{background:var(--pk);color:#fff}.btn.yl{background:var(--y);color:#2a1b4d}
+:focus-visible{outline:4px solid var(--b);outline-offset:2px}
+#fx span{transition:background .3s;border-radius:6px;padding:1px 2px}
+#fx span.hl{background:var(--y);color:#2a1b4d}
+.prof{font-size:64px;line-height:1;display:inline-block}
+.prof.talk{animation:bob .5s infinite alternate}
+@keyframes bob{to{transform:translateY(-8px) rotate(-5deg)}}
+.bubble{background:var(--p);color:#fff;border-radius:18px;padding:12px 16px;margin-top:8px;font-weight:500;min-height:60px}
+input,textarea{font:inherit;color:var(--tx);background:var(--bg);border:3px solid var(--ln);border-radius:12px;padding:8px 12px;width:100%;margin-bottom:8px}
+#cz input{width:auto;display:inline-block;padding:2px 8px;margin:0 2px}
+#cz input.ok{border-color:var(--g);background:rgba(20,201,142,.25)}#cz input.ko{border-color:var(--pk);background:rgba(255,77,141,.2)}
+.pc{background:var(--pk);color:#fff;cursor:grab;user-select:none;font-size:16px}
+.pc.sel{background:var(--y);color:#2a1b4d;transform:scale(1.08)}
+svg{width:100%;max-width:520px;display:block;margin:auto}
+.z{cursor:pointer;stroke:var(--ln);stroke-width:3;transition:fill-opacity .3s}
+.z:hover{fill-opacity:.75!important}
+.z.shake{animation:sh .35s}
+@keyframes sh{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.zt{font-weight:700;font-size:15px;fill:#fff;text-anchor:middle;pointer-events:none;paint-order:stroke;stroke:#2a1b4d;stroke-width:4px}
+#bm{font-weight:600;min-height:28px}
+.sc{display:flex;gap:10px;flex-wrap:wrap}
+.chat{max-height:380px;overflow:auto;display:flex;flex-direction:column;gap:8px;padding:4px}
+.m{padding:8px 14px;border-radius:16px;max-width:85%;border:3px solid var(--ln)}
+.m b{display:block;font-size:13px;opacity:.8}
+.m.them{background:var(--b);color:#fff;align-self:flex-start}
+.m.me{background:var(--y);color:#2a1b4d;align-self:flex-end}
+.m.prof{background:var(--g);color:#06291f;align-self:center;font-size:16px;font-size:16px}
+.opt{display:block;width:100%;text-align:left;font:inherit;font-weight:500;color:var(--tx);background:var(--card);border:3px solid var(--p);border-radius:14px;padding:10px 14px;margin-top:8px;cursor:pointer}
+.opt:hover{background:var(--p);color:#fff}
+.pop{position:fixed;left:50%;top:80px;transform:translateX(-50%);background:var(--y);color:#2a1b4d;font-weight:700;padding:8px 20px;border:3px solid var(--ln);border-radius:99px;z-index:9;animation:up 1.1s forwards}
+@keyframes up{to{top:40px;opacity:0}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+<h1>🧠 NeuroQuest</h1>
+<div class="hud"><span id="lvl">Niv. 1</span><div class="xp"><div id="bar"></div></div><span id="xpt">0 XP</span></div>
+</header>
+<nav id="nav">
+<button data-t="fiches" class="on">📚 Fiches & prof</button>
+<button data-t="brain">🧠 Simulation cerveau</button>
+<button data-t="rp">🎭 Jeux de rôle</button>
+</nav>
+<main>
+ 
+<section id="fiches" class="on">
+<div class="card"><div id="fl"></div></div>
+<div class="row">
+ <div class="card">
+  <h2 id="ft"></h2>
+  <div id="fx"></div>
+  <p><button class="btn" onclick="explain()">▶ Explique-moi</button><button class="btn pk" onclick="stop()">⏹ Stop</button><button class="btn yl" onclick="cloze()">🧩 Texte à trous</button></p>
+  <label><input type="checkbox" id="snd" checked style="width:auto;margin-right:6px">Voix du prof</label>
+  <div id="cz"></div>
+ </div>
+ <div>
+  <div class="card" style="text-align:center"><div class="prof" id="prof">🧑‍🏫</div><div class="bubble" id="bub"></div></div>
+  <div class="card">
+   <h2>➕ Ma fiche</h2>
+   <input id="nt" placeholder="Titre (ex. La Révolution française)">
+   <textarea id="nx" rows="4" placeholder="Colle ton cours ici : une idée par phrase."></textarea>
+   <button class="btn" onclick="add()">Ajouter la fiche</button><button class="btn pk" onclick="del()">Supprimer cette fiche</button>
+  </div>
+ </div>
+</div>
+</section>
+ 
+<section id="brain">
+<div class="row">
+ <div class="card">
+  <h2>Remets chaque partie à sa place</h2>
+  <svg viewBox="0 0 400 300" role="img" aria-label="Cerveau vu de côté, face à gauche">
+   <defs><clipPath id="cp"><ellipse cx="200" cy="135" rx="165" ry="105"/></clipPath></defs>
+   <rect class="z" data-z="tronc" x="215" y="205" width="30" height="80" rx="12" fill="#14c98e" fill-opacity=".45"/>
+   <g clip-path="url(#cp)">
+    <polygon class="z" data-z="frontal" points="0,0 195,0 185,110 130,160 0,160" fill="#ff4d8d" fill-opacity=".45"/>
+    <polygon class="z" data-z="parietal" points="195,0 400,0 400,70 305,70 280,150 215,150 185,110" fill="#ffc933" fill-opacity=".45"/>
+    <polygon class="z" data-z="occipital" points="305,70 400,70 400,260 280,260 280,150" fill="#3b82f6" fill-opacity=".45"/>
+    <polygon class="z" data-z="temporal" points="0,160 130,160 185,110 215,150 280,150 280,260 0,260" fill="#7c3aed" fill-opacity=".45"/>
+   </g>
+   <ellipse cx="200" cy="135" rx="165" ry="105" fill="none" stroke="var(--ln)" stroke-width="4" pointer-events="none"/>
+   <ellipse class="z" data-z="cervelet" cx="305" cy="238" rx="52" ry="30" fill="#ff8a3d" fill-opacity=".5"/>
+   <text class="zt" id="t_frontal" x="95" y="105">1</text>
+   <text class="zt" id="t_parietal" x="262" y="52">2</text>
+   <text class="zt" id="t_occipital" x="335" y="150">3</text>
+   <text class="zt" id="t_temporal" x="150" y="205">4</text>
+   <text class="zt" id="t_cervelet" x="305" y="244">5</text>
+   <text class="zt" id="t_tronc" x="230" y="252" style="font-size:12px">6</text>
+  </svg>
+  <p id="bm">Choisis une étiquette (ou glisse-la), puis touche une zone.</p>
+ </div>
+ <div class="card">
+  <h2>Étiquettes</h2>
+  <div id="chips"></div>
+  <button class="btn yl" onclick="hint()">💡 Indice</button><button class="btn pk" onclick="resetB()">↺ Recommencer</button>
+  <p style="color:var(--mut);font-size:15px">Astuce : relis la fiche « Le cerveau » avec le prof avant de jouer.</p>
+ </div>
+</div>
+</section>
+ 
+<section id="rp">
+<div class="card">
+ <h2>Choisis ton scénario</h2>
+ <div class="sc"><button class="btn" onclick="startRP('urg')">🩺 Urgences neuro</button><button class="btn pk" onclick="startRP('job')">💼 Entretien d'embauche</button></div>
+</div>
+<div class="card"><div class="chat" id="rl"><div class="m prof"><b>🧑‍🏫 Prof</b>Lance un scénario : chaque choix est noté et commenté.</div></div><div id="ro"></div></div>
+</section>
+ 
+</main>
+<script>
+const $=s=>document.querySelector(s),esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let S={xp:0,custom:[]};
+try{S=Object.assign(S,JSON.parse(localStorage.getItem('nq')||'{}'))}catch(e){}
+const save=()=>{try{localStorage.setItem('nq',JSON.stringify(S))}catch(e){}};
+function hud(){$('#lvl').textContent='Niv. '+(Math.floor(S.xp/50)+1);$('#xpt').textContent=S.xp+' XP';$('#bar').style.width=(S.xp%50)*2+'%'}
+function addXp(n){if(n<=0)return;S.xp+=n;save();hud();const e=document.createElement('div');e.className='pop';e.textContent='+'+n+' XP ⭐';document.body.appendChild(e);setTimeout(()=>e.remove(),1100)}
+$('#nav').onclick=e=>{const t=e.target.dataset.t;if(!t)return;document.querySelectorAll('nav button,section').forEach(x=>x.classList.remove('on'));e.target.classList.add('on');$('#'+t).classList.add('on');stop()};
+ 
+/* ===== Fiches ===== */
+const base=[
+{t:'🧠 Le cerveau',x:"Le cerveau humain est divisé en plusieurs zones spécialisées. Le lobe frontal, à l'avant, gère le raisonnement et les décisions. Le lobe pariétal, au sommet, traite le toucher et l'orientation dans l'espace. Le lobe temporal, sur le côté, s'occupe de l'audition et de la mémoire. Le lobe occipital, à l'arrière, analyse la vision. Le cervelet, sous l'arrière du cerveau, coordonne l'équilibre et les mouvements. Le tronc cérébral contrôle la respiration et le rythme cardiaque."},
+{t:'🎮 Apprendre en simulant',x:"La révision active consiste à se tester plutôt que relire. Les simulations et les jeux de rôle immersifs ancrent les connaissances grâce à l'action. Se tromper dans un environnement sans risque aide à mieux retenir. Un tuteur IA peut adapter les scénarios au niveau de chaque élève."}];
+const all=()=>base.concat(S.custom);let cur=0,run=0;
+const sents=t=>(t.match(/[^.!?]+[.!?]?/g)||[]).map(s=>s.trim()).filter(Boolean);
+function list(){$('#fl').innerHTML=all().map((f,i)=>`<button class="chip ${i==cur?'on':''}" onclick="sel(${i})">${esc(f.t)}</button>`).join('')}
+function sel(i){stop();cur=i;list();show()}
+function show(){const f=all()[cur];$('#ft').textContent=f.t;$('#fx').innerHTML=sents(f.x).map((s,i)=>`<span id="s${i}">${esc(s)} </span>`).join('');$('#bub').textContent="Salut ! Clique sur « Explique-moi » et je te présente cette fiche phrase par phrase. 🎓";$('#cz').innerHTML=''}
+function stop(){run++;try{speechSynthesis.cancel()}catch(e){}$('#prof').classList.remove('talk');document.querySelectorAll('#fx span').forEach(e=>e.classList.remove('hl'))}
+function say(t,cb){if($('#snd').checked&&window.speechSynthesis){const u=new SpeechSynthesisUtterance(t);u.lang='fr-FR';u.onend=u.onerror=cb;speechSynthesis.speak(u)}else setTimeout(cb,1500+t.length*45)}
+function explain(){stop();const id=run,ss=sents(all()[cur].x);let i=0;$('#prof').classList.add('talk');
+ const step=()=>{if(id!=run)return;document.querySelectorAll('#fx span').forEach(e=>e.classList.remove('hl'));
+  if(i>=ss.length){$('#bub').textContent='Et voilà ! Teste-toi avec le texte à trous 🧩';$('#prof').classList.remove('talk');addXp(5);return}
+  $('#s'+i).classList.add('hl');const s=ss[i++];$('#bub').textContent=s;say(s,step)};step()}
+function cloze(){stop();const z=$('#cz');delete z.dataset.d;let h='',n=0;
+ sents(all()[cur].x).forEach(s=>{const w=(s.match(/[A-Za-zÀ-ÿ]{6,}/g)||[]).sort((a,b)=>b.length-a.length)[0];if(!w||n>=4)return;n++;h+=`<p>${esc(s).replace(w,`<input data-a="${w.toLowerCase()}" size="${w.length}" aria-label="mot manquant">`)}</p>`});
+ z.innerHTML=h?h+'<button class="btn" onclick="chk()">Vérifier ✅</button> <b id="cr"></b>':'<p>Fiche trop courte pour un texte à trous.</p>'}
+function chk(){let ok=0,t=0;document.querySelectorAll('#cz input').forEach(i=>{t++;const g=i.value.trim().toLowerCase()==i.dataset.a;i.className=g?'ok':'ko';if(g)ok++});
+ $('#cr').textContent=ok+'/'+t+(ok==t?' 🎉 Parfait !':' 💪 Presque !');const z=$('#cz');if(ok==t&&!z.dataset.d){z.dataset.d=1;addXp(10)}}
+function add(){const t=$('#nt').value.trim(),x=$('#nx').value.trim();if(!t||!sents(x).length){pop2('Ajoute un titre et au moins une phrase.');return}
+ S.custom.push({t:'📝 '+t,x});save();$('#nt').value=$('#nx').value='';cur=all().length-1;list();show();addXp(5)}
+function del(){if(cur<base.length){pop2('Les fiches de base ne se suppriment pas.');return}S.custom.splice(cur-base.length,1);save();cur=0;list();show()}
+function pop2(m){$('#bub').textContent=m}
+ 
+/* ===== Cerveau ===== */
+const P=[['frontal','Lobe frontal','le raisonnement et les décisions, à l\'avant'],['parietal','Lobe pariétal','le toucher et l\'orientation, au sommet'],['occipital','Lobe occipital','la vision, à l\'arrière'],['temporal','Lobe temporal','l\'audition et la mémoire, sur le côté'],['cervelet','Cervelet','l\'équilibre et les mouvements, sous l\'arrière'],['tronc','Tronc cérébral','la respiration et le cœur, tout en bas']];
+let pick=null,done={};
+function chips(){$('#chips').innerHTML=P.filter(p=>!done[p[0]]).map(p=>`<span class="chip pc ${pick==p[0]?'sel':''}" draggable="true" data-p="${p[0]}" tabindex="0">${p[1]}</span>`).join('')||'<b>🏆 Cerveau complet !</b>'}
+function place(z,p){if(!p||done[p])return;const el=document.querySelector(`[data-z=${z}]`);
+ if(z==p){done[p]=1;pick=null;el.setAttribute('fill-opacity','.95');$('#t_'+z).textContent=P.find(x=>x[0]==z)[1].replace('Lobe ','').replace(' cérébral','');addXp(10);
+  $('#bm').textContent=Object.keys(done).length==6?'🎉 Bravo, cerveau reconstitué ! +20 XP bonus':'✅ Bien joué !';if(Object.keys(done).length==6)addXp(20)}
+ else{el.classList.remove('shake');void el.getBoundingClientRect();el.classList.add('shake');$('#bm').textContent='❌ Pas ici ! Essaie une autre zone.'}chips()}
+document.addEventListener('click',e=>{const c=e.target.closest('.pc'),z=e.target.closest('[data-z]');if(c){pick=c.dataset.p;chips();$('#bm').textContent='Étiquette choisie : touche maintenant une zone.'}else if(z&&pick)place(z.dataset.z,pick)});
+document.addEventListener('keydown',e=>{if((e.key=='Enter'||e.key==' ')&&e.target.classList&&e.target.classList.contains('pc')){e.preventDefault();e.target.click()}});
+document.addEventListener('dragstart',e=>{const c=e.target.closest&&e.target.closest('.pc');if(c){pick=c.dataset.p;e.dataTransfer.setData('text/plain',pick)}});
+document.addEventListener('dragover',e=>{if(e.target.closest&&e.target.closest('[data-z]'))e.preventDefault()});
+document.addEventListener('drop',e=>{const z=e.target.closest&&e.target.closest('[data-z]');if(z){e.preventDefault();place(z.dataset.z,e.dataTransfer.getData('text/plain'))}});
+function hint(){const p=P.find(x=>x[0]==pick);$('#bm').textContent=p?'💡 '+p[1]+' : '+p[2]+'.':'Choisis d\'abord une étiquette.'}
+function resetB(){done={};pick=null;document.querySelectorAll('.z').forEach(e=>e.setAttribute('fill-opacity',e.dataset.z=='cervelet'?'.5':'.45'));['frontal','parietal','occipital','temporal','cervelet','tronc'].forEach((k,i)=>{});const n={frontal:1,parietal:2,occipital:3,temporal:4,cervelet:5,tronc:6};for(const k in n)$('#t_'+k).textContent=n[k];$('#bm').textContent='Choisis une étiquette (ou glisse-la), puis touche une zone.';chips()}
+ 
+/* ===== Jeux de rôle ===== */
+const SC={
+urg:{k:'urg',who:'M. Durand',av:'🧑‍🦱',max:30,n:{
+ s:{t:"Docteur, depuis ce matin les lettres sont floues et je vois mal sur la droite…",o:[["Tester sa vision : j'examine le lobe occipital","b",10,"Bien vu ! La vision est traitée dans le lobe occipital, à l'arrière."],["Tester d'abord son équilibre","b",2,"Piste logique, mais ses symptômes parlent de vision."]]},
+ b:{t:"Ah oui, je me suis cogné l'arrière de la tête hier soir.",o:[["Prescrire un scanner cérébral immédiat","c",10,"Bon réflexe : un choc à l'arrière peut toucher la zone visuelle."],["Le renvoyer chez lui","c",0,"Risqué ! Un symptôme neurologique après un choc se contrôle toujours."]]},
+ c:{t:"Le scanner montre un petit hématome à l'arrière. Que lui dites-vous ?",o:[["On vous surveille : votre vue devrait revenir avec le traitement","e",10,"Rassurant et précis. Un bon médecin explique et rassure."],["Aucune idée, on verra bien","e",0,"Pas très rassurant… bien communiquer fait partie du soin."]]},
+ e:{t:"Merci docteur, je me sens en confiance. 🙏"}}},
+job:{k:'job',who:'Camille (RH)',av:'🧑‍💼',max:30,n:{
+ s:{t:"Bonjour ! Parlez-moi de vous en une minute.",o:[["Je résume mon parcours et ce qui me motive pour ce poste","b",10,"Structuré et ciblé : exactement ce qu'attend un recruteur."],["Je récite tout mon CV en détail","b",3,"Trop long ! Garde 2 ou 3 éléments clés."]]},
+ b:{t:"Quelle est votre plus grande faiblesse ?",o:[["J'ai du mal à déléguer, mais je travaille dessus avec une méthode","c",10,"Honnête, avec une action concrète : excellent combo."],["Je n'en ai aucune","c",0,"Peu crédible : montre de l'autocritique."]]},
+ c:{t:"Avez-vous des questions pour nous ?",o:[["Oui : comment se passe l'intégration des nouvelles recrues ?","e",10,"Poser une question prouve ton intérêt."],["Non, c'est bon","e",2,"Dommage, c'est une occasion de briller."]]},
+ e:{t:"Merci, nous revenons vers vous très vite ! 🤝"}}}};
+let sc,score;
+function log(w,t,c){const d=document.createElement('div');d.className='m '+c;d.innerHTML='<b>'+esc(w)+'</b>'+esc(t);$('#rl').appendChild(d);$('#rl').scrollTop=1e5}
+function startRP(k){sc=SC[k];score=0;$('#rl').innerHTML='';$('#ro').innerHTML='';go('s')}
+function go(id){const n=sc.n[id];log(sc.av+' '+sc.who,n.t,'them');if(!n.o){end();return}
+ $('#ro').innerHTML=n.o.map((o,i)=>`<button class="opt" onclick="choose('${id}',${i})">${esc(o[0])}</button>`).join('')}
+function choose(id,i){const o=sc.n[id].o[i];$('#ro').innerHTML='';log('Toi',o[0],'me');score+=o[2];
+ setTimeout(()=>{log('🧑‍🏫 Le prof',(o[2]>=sc.max/3?'✅ ':'⚠️ ')+o[3]+' (+'+o[2]+')','prof');setTimeout(()=>go(o[1]),700)},500)}
+function end(){const m=score>=sc.max?'🏆 Parfait !':score>=sc.max/2?'👍 Bien joué !':'💪 Rejoue pour progresser !';
+ log('🎮 Résultat',m+' '+score+'/'+sc.max+' points','prof');addXp(score);
+ $('#ro').innerHTML=`<button class="btn" onclick="startRP('${sc.k}')">↺ Rejouer</button>`}
+ 
+hud();list();show();chips();
+</script>
+</body>
+</html>
+ 
